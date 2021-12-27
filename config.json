@@ -1,0 +1,17 @@
+{
+    "logLevel": "debug",
+    
+    "mqttBroker": {
+        "url": "mqtt://172.16.1.2",
+        "topic": "Loxone-W2",
+        "subscriptions": [
+            "TasmotaSocket/Waschmaschine/SENSOR/#",
+            "TasmotaSocket/Trockner/SENSOR/#"
+        ]
+    },
+
+    "loxone": {
+        "host": "172.16.1.42",
+        "port": 8002
+    }
+}
