@@ -19,8 +19,8 @@ class bridgeToLoxone extends EventEmitter {
         this.Host = Host;
         this.Port = Port;
         this.Socket = dgram.createSocket('udp4');
-        this.Socket.on('listening', () => { this.Connected = true; logging.info('bridge to Loxone: listen on ' + this.Socket.address().address + ':UDP/' + this.Socket.address().port) });
-        this.Socket.on('close', () => { this.Connected = false; logging.info('bridge to Loxone: connection closed') });
+        this.Socket.on('listening', () => { this.Connected = true; logging.info('Loxone: listen on ' + this.Socket.address().address + ':UDP/' + this.Socket.address().port) });
+        this.Socket.on('close', () => { this.Connected = false; logging.warning('Loxone: connection closed') });
         this.Socket.on('error', (error:Error) => { this.errorHandler(error) });
         this.Socket.on('message', (message:Buffer, remote:dgram.RemoteInfo) => { this.receiveFromLoxone(message,remote) });
         this.Socket.bind(this.Port);
@@ -29,7 +29,7 @@ class bridgeToLoxone extends EventEmitter {
     public sendToLoxone(message:string):boolean
     { 
         var status:boolean = false
-        logging.info('bridge to Loxone: send message to udp://' + this.Host + ':' + this.Port + ' => "' + message + '"')   
+        logging.debug('Loxone: send message to udp://' + this.Host + ':' + this.Port + ' => "' + message + '"')   
         this.Socket.send(message, 0, message.length, this.Port, this.Host, (error:Error|null, bytes:number) => {
             if (error)
             {
@@ -47,13 +47,13 @@ class bridgeToLoxone extends EventEmitter {
     private receiveFromLoxone(message:Buffer, remote:dgram.RemoteInfo)
     {
         let messageText:string = message.toString().trim()
-        logging.info('bridge to Loxone: receive message from udp://' + remote.address + ':' + remote.port + ' => "' + message + '"')
+        logging.debug('Loxone: receive message from udp://' + remote.address + ':' + remote.port + ' => "' + message + '"')
         this.emit('receiveFromLoxone',messageText);
     }
 
     private errorHandler(error:Error)
     {
-        logging.error('bridge to Loxone: ' + error)
+        logging.error('Loxone: ' + error)
     }
 
 }
