@@ -21,8 +21,8 @@ class bridgeToMqttBroker extends EventEmitter {
         this.Topic = Topic;
         this.Subscriptions = Subscriptions;
         this.Client = mqtt.connect(this.Url, { will: { topic: this.Topic + '/connected', payload: '0', qos: 0, retain: true }, rejectUnauthorized: false });
-        this.Client.on('connect', () => { this.Connected = true; logging.info('bridge to MQTT broker: connected with ' + this.Url); this.subscribeToMqttBroker(); });
-        this.Client.on('close', () => { this.Connected = false; logging.info('bridge to MQTT broker: connection closed'); });
+        this.Client.on('connect', () => { this.Connected = true; logging.info('MQTT broker: connected with ' + this.Url); this.subscribeToMqttBroker(); });
+        this.Client.on('close', () => { this.Connected = false; logging.warning('MQTT broker: connection closed'); });
         this.Client.on('error', (error:Error) => { this.errorHandler(error); });
         this.Client.on('message', (topic:string, payload:string, msg:string) => { this.receiveFromMqttBroker(topic,payload,msg); });
     }
@@ -40,7 +40,7 @@ class bridgeToMqttBroker extends EventEmitter {
     public sendToMqttBroker(topic:string,payload:string):boolean
     { 
         var status:boolean = false
-        logging.info('bridge to MQTT broker: send message to ' + this.Url + ' => "' + topic + ':' + payload + '"')   
+        logging.debug('MQTT broker: send message to ' + this.Url + ' => "' + topic + ':' + payload + '"')   
         this.Client.publish(topic, payload, { qos: 0, retain: false }, (error:Error | undefined) => {
             if (error)
             {
@@ -58,13 +58,13 @@ class bridgeToMqttBroker extends EventEmitter {
     private receiveFromMqttBroker(topic:string, payload:string, message:string)
     {
         let payloadString:string = payload.toString()
-        logging.info('bridge to MQTT broker: receive message from ' + topic + ' => "' + payload.toString() + '"')
+        logging.debug('MQTT broker: receive message from ' + topic + ' => "' + payload.toString() + '"')
         this.emit('receiveFromMqttBroker',topic,payloadString);
     }
 
     private errorHandler(error:Error)
     {
-        logging.error('bridge to Loxone: ' + error)
+        logging.error('Loxone: ' + error)
     }
 
 }
