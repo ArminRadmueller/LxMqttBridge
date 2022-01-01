@@ -11,4 +11,4 @@ RUN mkdir -p /opt/bridge \
     && unzip /tmp/bridge.zip -d /tmp && cp -n /tmp/LxMqttBridge-master/* /opt/bridge && rm /tmp/bridge.zip && rm -r /tmp/LxMqttBridge-master \
     && cd /opt/bridge && npm install --production && npm run build
 
-CMD [ "node", "build/bridge.js ../config.json" ]
+CMD [ "node", "build/bridge.js", "../config.json" ]
