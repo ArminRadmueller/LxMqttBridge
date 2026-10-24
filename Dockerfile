@@ -1,4 +1,4 @@
-FROM node:17.3-bullseye-slim
+FROM node:26-trixie-slim
 LABEL maintainer="Armin Radmüller"
 
 ENV NODE_ENV=production
