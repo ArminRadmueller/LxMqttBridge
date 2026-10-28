@@ -1,0 +1,25 @@
+{
+    "logLevel": "debug",
+
+    "mqttBroker": {
+        "url": "mqtt://your-mqtt-broker.local:1883",
+        "topic": "Loxone-W2",
+        "username": "",
+        "password": "",
+        "tlsVerify": true,
+        "subscriptions": [
+            "TasmotaSocket/Waschmaschine/SENSOR/#",
+            "TasmotaSocket/Trockner/SENSOR/#"
+        ]
+    },
+
+    "loxone": {
+        "host": "your-loxone-miniserver.local",
+        "port": 8002
+    },
+
+    "message transformation rules": "see README: type 'tasmota-energy' maps an ENERGY block to Loxone virtual inputs, 'pass-through' forwards the message as-is; topicSuffix must match a defined subscription",
+    "mappings": [
+        { "type": "tasmota-energy", "topicSuffix": "SENSOR" }
+    ]
+}

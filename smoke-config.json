@@ -1,0 +1,16 @@
+{
+    "logLevel": "debug",
+    "mqttBroker": {
+        "url": "mqtt://127.0.0.1:18871",
+        "topic": "Loxone-W2",
+        "subscriptions": ["TasmotaSocket/+/SENSOR"]
+    },
+    "loxone": {
+        "host": "127.0.0.1",
+        "port": 8103,
+        "sendPort": 8104
+    },
+    "mappings": [
+        { "type": "tasmota-energy", "topicSuffix": "SENSOR" }
+    ]
+}
