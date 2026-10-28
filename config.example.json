@@ -1,0 +1,24 @@
+{
+    "logLevel": "debug",
+
+    "mqttBroker": {
+        "url": "mqtt://mqtt-broker.local:1883",
+        "topic": "Loxone-W2",
+        "username": "",
+        "password": "",
+        "tlsVerify": true,
+        "subscriptions": [
+            "tasmota/smartSocket/Waschmaschine/SENSOR/#",
+            "tasmota/smartSocket/Trockner/SENSOR/#"
+        ]
+    },
+
+    "loxone": {
+        "host": "loxone-miniserver.local",
+        "port": 8002
+    },
+
+    "mappings": [
+        { "type": "tasmota-smartsocket", "topicSuffix": "SENSOR" }
+    ]
+}

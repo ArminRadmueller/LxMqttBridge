@@ -96,6 +96,10 @@ dist
 
 # FuseBox cache
 .fusebox/
+.flycheck*
+
+# Local configuration (take config.example.json as template)
+config.json
 
 # DynamoDB Local files
 .dynamodb/
