@@ -2,7 +2,7 @@
     "logLevel": "debug",
 
     "mqttBroker": {
-        "url": "mqtt://your-mqtt-broker.local:1883",
+        "url": "mqtt://dein-mqtt-broker.local:1883",
         "topic": "Loxone-W2",
         "username": "",
         "password": "",
@@ -14,11 +14,12 @@
     },
 
     "loxone": {
-        "host": "your-loxone-miniserver.local",
+        "host": "dein-loxone-miniserver.local",
         "port": 8002
     },
 
-    "message transformation rules": "see README: type 'tasmota-energy' maps an ENERGY block to Loxone virtual inputs, 'pass-through' forwards the message as-is; topicSuffix must match a defined subscription",
+    "Hinweis Transformationen": "Typ 'tasmota-energy' mappt einen Tasmota-ENERGY-Block auf Loxone-Virtual-Inputs, 'pass-through' leitet die Nachricht unverändert weiter. topicSuffix muss zu einer der oben konfigurierten Subscriptions passen (siehe README).",
+    "Hinweis sendPort": "Optional: loxone.sendPort überschreibt den Ziel-Port für Nachrichten an den Miniserver (Standard: derselbe Port wie loxone.port).",
     "mappings": [
         { "type": "tasmota-energy", "topicSuffix": "SENSOR" }
     ]
