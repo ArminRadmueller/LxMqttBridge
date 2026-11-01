@@ -1,52 +1,72 @@
 #!/usr/bin/env node
 
-const logging = require('yalm')
-const config = require(process.argv[2] || './config.json')
+import logging from 'yalm'
 
 import {bridgeToLoxone} from "./bridgeLoxone"
 import {bridgeToMqttBroker} from "./bridgeMqttBroker"
+import {loadConfig} from "./config"
+import {loxoneToMqtt, mapMqttToLoxone} from "./transform"
+
+// Note: `import` declarations are hoisted, but none of the imported modules log at import
+// time, so reading the config here is safe before any logging output.
+const config = loadConfig(process.env.BRIDGE_CONFIG || process.argv[2] || './config.json')
 
 logging.setLevel(config.logLevel)
 
 logging.info('Loxone-MQTT Bridge (LxMqttBridge) starting...')
 
-var bdgLx = new bridgeToLoxone(config.loxone.host, config.loxone.port);
-bdgLx.on('receiveFromLoxone', (message:string) => { processIncomingLoxoneMessage(message) } );
+const bdgLx = new bridgeToLoxone(config.loxone.host, config.loxone.port, config.loxone.sendPort)
+bdgLx.on('receiveFromLoxone', (message: string) => processIncomingLoxoneMessage(message))
 
-var bdgMqtt = new bridgeToMqttBroker(config.mqttBroker.url, config.mqttBroker.topic, config.mqttBroker.subscriptions);
-bdgMqtt.on('receiveFromMqttBroker', (topic:string,payload:string) => { processIncomingMqttBrokerMessage(topic,payload) } );
+const bdgMqtt = new bridgeToMqttBroker(config.mqttBroker)
+bdgMqtt.on('receiveFromMqttBroker', (topic: string, payload: string) => processIncomingMqttBrokerMessage(topic, payload))
 
-function processIncomingMqttBrokerMessage(topic:string,payload:string)
+function processIncomingMqttBrokerMessage(topic: string, payload: string): void
 {
+    let messages: string[]
     try
     {
-        if ( topic.endsWith("SENSOR") )
-        {
-            let data = JSON.parse(payload)
-            bdgLx.sendToLoxone(topic + '/Current:' + data.ENERGY.Current);
-            bdgLx.sendToLoxone(topic + '/Power:' + data.ENERGY.Power);
-            bdgLx.sendToLoxone(topic + '/Voltage:' + data.ENERGY.Voltage);
-        }
+        messages = mapMqttToLoxone(config.mappings ?? [], topic, payload)
     }
-    catch ( error )
+    catch (error)
     {
-        logging.error("message processing from MQTT broker: " + (error as Error).message);
+        logging.error('message processing from MQTT broker: ' + (error as Error).message)
+        return
+    }
+    for (const message of messages)
+    {
+        bdgLx.sendToLoxone(message)
+    }
+    if (messages.length === 0)
+    {
+        logging.debug('MQTT broker: nothing to forward for topic "' + topic + '" (no mapping or empty payload mapping), message ignored')
     }
 }
 
-function processIncomingLoxoneMessage(message:string)
+function processIncomingLoxoneMessage(message: string): void
 {
-    try
+    const mapped = loxoneToMqtt(message)
+    if (!mapped)
     {
-        let data = message.split(';')
-        const topic = data[0]
-        if (data.length > 1)
-        {
-            bdgMqtt.sendToMqttBroker(topic,data[1])
-        }
+        logging.debug('Loxone: message "' + message + '" cannot be mapped, ignored')
+        return
     }
-    catch ( error )
+    if (!bdgMqtt.Connected)
     {
-        logging.error("message processing from Loxone: " + (error as Error).message);
+        logging.warning('MQTT broker: not connected, message "' + message + '" dropped')
+        return
     }
+    bdgMqtt.sendToMqttBroker(mapped.topic, mapped.payload)
 }
+
+// Fail fast and loudly instead of silently continuing in an undefined state.
+// Container orchestrators (e.g. Docker restart policies) can then restart the bridge.
+process.on('uncaughtException', (error: Error) => {
+    logging.error('uncaught exception, exiting: ' + (error.stack ?? error.message))
+    process.exit(1)
+})
+
+process.on('unhandledRejection', (reason: unknown) => {
+    logging.error('unhandled promise rejection, exiting: ' + (reason instanceof Error ? reason.stack : String(reason)))
+    process.exit(1)
+})
